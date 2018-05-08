@@ -10,7 +10,7 @@ dubbo浅尝辄止，后期深入学习还会继续跟进写记事本。因为我
   今天要设计的协议叫Luck协议（很多教程上都叫这个）
   因为我们中间件本意是为了传输文件，实现断点续传。所以字段名字hhh
 ##### header
-```
+```java
     /**
     * 消息开头信息
     */
@@ -32,7 +32,7 @@ dubbo浅尝辄止，后期深入学习还会继续跟进写记事本。因为我
     private String fileName;
 ```
 ##### 传输体
-```
+```java
     /**
      * header
      */
@@ -47,7 +47,7 @@ dubbo浅尝辄止，后期深入学习还会继续跟进写记事本。因为我
 ### 第二步：定义编解码器
 ##### 编码器LuckEncoder
 这个就简单了按自己定义的协议意义一样一样的write进ByteBuf里
-```
+```java
 public class LuckEncoder extends MessageToByteEncoder<LuckMessage> {
 
     @Override
@@ -64,7 +64,7 @@ public class LuckEncoder extends MessageToByteEncoder<LuckMessage> {
 ```
 ##### 解码器LuckDecoder
 这个就比较复杂了，要考虑到粘包断包的问题，其实也不是很复杂，就是严格的根据你定义的协议一点点的去解析，唯一要注意的就是你的每一次read操作都会导致readerIndex的后移，控制好readerIndex就不会有粘包断包的问题
-```
+```java
   public class LuckDecoder extends ByteToMessageDecoder {
 
     public final int BASE_LENGTH = 4 + 4 + 1;
@@ -115,7 +115,7 @@ public class LuckEncoder extends MessageToByteEncoder<LuckMessage> {
 ### 第三步：定义InboundHandler、OutboundHandler
 这一部分就算是业务的过滤器了，编解码后做一些业务处理
 ##### InboundHandler
-```
+```java
 public class LuckInboundHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -129,7 +129,7 @@ public class LuckInboundHandler extends ChannelInboundHandlerAdapter {
 }
 ```
 ##### OutboundHandler
-```
+```java
 public class LuckOutboundHandler extends ChannelOutboundHandlerAdapter {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
@@ -140,7 +140,7 @@ public class LuckOutboundHandler extends ChannelOutboundHandlerAdapter {
 ```
 ### 第四步：创建LuckInitializer
 其实就是在channel的pipeline中添加一层层的handler
-```
+```java
 public class LuckInitializer extends ChannelInitializer<SocketChannel> {
 
     @Override
@@ -155,7 +155,7 @@ public class LuckInitializer extends ChannelInitializer<SocketChannel> {
 ```
 ### 第五步：就可以创建server和client发消息啦
 server
-```
+```java
 public class Server {
 
     private static final int PORT = 8888;
@@ -189,7 +189,7 @@ public class Server {
 }
 ```
 client
-```
+```java
 public class Client {
     public static void main(String[] args) throws InterruptedException {
 
